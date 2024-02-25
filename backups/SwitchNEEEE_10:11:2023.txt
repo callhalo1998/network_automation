@@ -1,0 +1,86 @@
+
+config-file-header
+SwitchNEEEE
+v3.2.0.84 / RCBS3.2_950_377_134
+CLI v1.0
+file SSD indicator encrypted
+@
+ssd-control-start
+ssd config
+ssd file passphrase control unrestricted
+no ssd file integrity control
+ssd-control-end cb0a3fdb1f3a1af4e4430033719968c0
+!
+!
+unit-type-control-start
+unit-type unit 1 network gi uplink none
+unit-type-control-end
+!
+vlan database
+vlan 10,20,88
+exit
+voice vlan oui-table add 0001e3 Siemens_AG_phone
+voice vlan oui-table add 00036b Cisco_phone
+voice vlan oui-table add 00096e Avaya
+voice vlan oui-table add 000fe2 H3C_Aolynk
+voice vlan oui-table add 0060b9 Philips_and_NEC_AG_phone
+voice vlan oui-table add 00d01e Pingtel_phone
+voice vlan oui-table add 00e075 Polycom/Veritel_phone
+voice vlan oui-table add 00e0bb 3Com_phone
+bonjour interface range vlan 1
+ip access-list extended NETNAM-SSH
+permit tcp 172.17.27.0 0.0.0.255 any any 22 ace-priority 5
+permit tcp 192.168.88.0 0.0.0.255 any any 22 ace-priority 10
+permit tcp 10.20.22.0 0.0.1.255 any any 22 ace-priority 15
+permit tcp 10.20.27.0 0.0.0.255 any any 22 ace-priority 20
+permit tcp 10.11.8.0 0.0.1.255 any any 22 ace-priority 25
+permit tcp 101.53.0.0 0.0.63.255 any any 22 ace-priority 30
+permit tcp 119.17.224.0 0.0.31.255 any any 22 ace-priority 35
+permit tcp 119.15.176.0 0.0.15.255 any any 22 ace-priority 40
+permit tcp 202.151.168.0 0.0.7.255 any any 22 ace-priority 45
+permit tcp 210.86.232.0 0.0.7.255 any any 22 ace-priority 50
+permit tcp 27.74.240.151 0.0.0.0 any any 22 ace-priority 55
+permit tcp 14.161.9.165 0.0.0.0 any any 22 ace-priority 60
+deny tcp any any any 22 ace-priority 65
+permit ip any any ace-priority 70
+exit
+hostname SwitchNEEEE
+line console
+exec-timeout 15
+exit
+line ssh
+exec-timeout 15
+exit
+aaa authentication login default tacacs local
+aaa authentication enable authorization default tacacs none
+username admin password encrypted $15$vdSaQOS8fVqbz4U/$gmCwoo3AlVsIaqtQOfriSGS9hZq34Yk3AVoPUrLDLJLRjKxcvbFJCha50OpZ8flxVIBOjdUhb7N42HdssVeaMw== privilege 15
+ip ssh server
+ip ssh logging enable
+ip ssh password-auth
+snmp-server server
+snmp-server community netnam2 ro view Default
+no ip http server
+no ip http secure-server
+tacacs-server host 210.86.239.5
+encrypted tacacs-server key 35PjPsR4ZBOCt98zWXkmuBCd20uHJCX4eE0xw0MFn00=
+clock timezone " " +7
+!
+interface vlan 10
+ name WIFI
+!
+interface vlan 20
+ name CABLE
+!
+interface vlan 88
+ name MGMT
+ ip address 192.168.88.10 255.255.255.0
+ service-acl input NETNAM-SSH
+!
+interface GigabitEthernet23
+ description Up-Link
+ switchport mode trunk
+ switchport trunk allowed vlan 10,88,110
+ power inline never
+!
+exit
+ip default-gateway 192.168.88.254

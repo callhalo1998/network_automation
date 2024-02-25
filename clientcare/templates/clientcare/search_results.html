@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block pagecontent %}
+  <!-- Page Heading -->
+  <div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Devices List</h1>
+  </div>
+
+  <div class="row">
+    <div class="col-xl-12 col-lg-7">
+      <!-- Log Activity -->
+      <div class="card shadow mb-8">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">Total Customer: {{ total_hostname }}</h6>
+        </div>
+        <div class="card-body">
+          <form class="form-inline my-2 my-lg-0">
+            <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" id="searchInput">
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+          </form>
+          <table class="table table-striped text-black" cellspacing="0">
+            <div id="searchResults">
+              <thead>
+                <tr>
+                  <th>Hostname</th>
+                  <th>Total Devices</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for main_hostname, total_device_filter in grouped_devices.items %}
+                <tr class="device-row">
+                  <td><a href="{% url 'device_detail' main_hostname %}">{{ main_hostname }}</a></td>
+                  <td>{{ total_device_filter.hostnames|length }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </div>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+

@@ -1,0 +1,154 @@
+# dec/19/2023 15:05:47 by RouterOS 7.8
+# software id = 4BBH-HATQ
+#
+# model = CCR2116-12G-4S+
+# serial number = HF6091HTEJ7
+/interface pptp-client
+add connect-to=119.17.252.90 disabled=no name=pptp-out1 user=ets
+/interface bridge
+add name=bridgeLAN protocol-mode=none
+add name=bridge_LANPub protocol-mode=none
+/interface ethernet
+set [ find default-name=sfp-sfpplus2 ] name=sfp-sfpplus2-Active
+set [ find default-name=sfp-sfpplus4 ] name=sfp-sfpplus4-Backup
+/interface bonding
+add mode=802.3ad name=bonding1 slaves=sfp-sfpplus1,sfp-sfpplus3
+/interface vlan
+add interface=bonding1 name=vlan10 vlan-id=10
+add interface=bonding1 name=vlan88 vlan-id=88
+/interface wireless security-profiles
+set [ find default=yes ] supplicant-identity=MikroTik
+/ip pool
+add name=pool_vlan10 ranges=10.10.0.2-10.10.255.254
+add name=dhcp_pool1 ranges=192.168.88.1-192.168.88.253
+add name=dhcp_pool2 ranges=172.17.0.2-172.17.255.254
+/ip dhcp-server
+add address-pool=dhcp_pool1 interface=vlan88 name=dhcp1
+add address-pool=dhcp_pool2 comment=GUEST interface=vlan10 lease-time=2h name=dhcp2
+/port
+set 0 name=serial0
+/queue type
+add kind=pcq name=download-20M pcq-classifier=dst-address pcq-rate=20M
+add kind=pcq name=upload-20M pcq-classifier=src-address pcq-rate=20M
+add kind=pcq name=download-40M pcq-classifier=dst-address pcq-rate=40M
+add kind=pcq name=upload-40M pcq-classifier=src-address pcq-rate=40M
+/queue simple
+add name=vlan10-QOS queue=upload-40M/download-40M target=172.17.0.0/16
+/snmp community
+set [ find default=yes ] addresses=210.86.239.10/32,10.11.0.0/24,202.151.169.0/24,119.17.252.90/32,172.17.27.1/32 name=netnam2
+/system logging action
+add bsd-syslog=yes name=syslog remote=210.86.239.36 syslog-facility=local7 target=remote
+/interface bridge port
+add bridge=bridgeLAN interface=ether12
+add bridge=bridgeLAN interface=ether11
+add bridge=bridgeLAN interface=ether10
+add bridge=bridgeLAN interface=ether9
+/ip address
+add address=192.168.88.254/24 interface=vlan88 network=192.168.88.0
+add address=172.17.0.1/16 interface=vlan10 network=172.17.0.0
+add address=192.168.101.1/24 interface=ether1 network=192.168.101.0
+add address=119.15.178.18/30 interface=ether2 network=119.15.178.16
+/ip cloud
+set update-time=no
+/ip dhcp-server network
+add address=10.10.0.0/16 dns-server=8.8.8.8,8.8.4.4 gateway=10.10.0.1
+add address=172.17.0.0/16 gateway=172.17.0.1
+add address=192.168.88.0/24 gateway=192.168.88.254
+/ip dns
+set servers=8.8.8.8,8.8.4.4
+/ip firewall address-list
+add address=10.20.22.0/23 list=NN_Private
+add address=10.20.27.0/24 list=NN_Private
+add address=10.20.34.0/23 list=NN_Private
+add address=101.53.0.0/18 list=NN_Private
+add address=202.151.168.0/21 list=NN_Private
+add address=210.86.232.0/21 list=NN_Private
+add address=119.17.224.0/19 list=NN_Private
+add address=119.15.176.0/20 list=NN_Private
+add address=27.74.240.151 list=NN_Private
+add address=10.11.0.0/24 list=NN_Private
+add address=202.151.169.0/24 list=NN_Private
+add address=14.161.9.165 list=NN_Private
+add address=172.17.27.0/24 list=NN_Private
+add address=119.17.252.90 list=NN_Private
+/ip firewall filter
+add action=drop chain=input comment=drop_winbox_conn dst-port=20881 protocol=tcp src-address-list=!NN_Private
+add action=drop chain=input comment=drop_ssh_conn dst-port=2294 protocol=tcp src-address-list=!NN_Private
+add action=drop chain=input comment=drop_snmp_conn dst-port=161 protocol=tcp src-address-list=!NN_Private
+add action=drop chain=input comment=drop_snmp_conn dst-port=161 protocol=udp src-address-list=!NN_Private
+/ip firewall nat
+add action=masquerade chain=srcnat src-address=192.168.88.0/24
+add action=masquerade chain=srcnat src-address=172.17.0.0/16 to-addresses=119.17.246.9
+add action=dst-nat chain=dstnat dst-address=119.17.246.9 dst-port=8443 protocol=tcp to-addresses=192.168.88.253 to-ports=8443
+add action=dst-nat chain=dstnat dst-address=119.17.246.9 dst-port=1611 protocol=udp to-addresses=192.168.88.253 to-ports=161
+add action=dst-nat chain=dstnat connection-type="" disabled=yes dst-address=119.17.246.9 dst-port=1611 protocol=tcp to-addresses=192.168.88.253 to-ports=161
+/ip route
+add disabled=no dst-address=0.0.0.0/0 gateway=119.15.178.17 routing-table=main suppress-hw-offload=no
+/ip service
+set telnet disabled=yes
+set ftp disabled=yes
+set www disabled=yes
+set ssh address=10.0.0.0/8,101.53.0.0/18,202.151.168.0/21,210.86.232.0/21,119.17.224.0/19,119.15.176.0/20,27.74.240.151/32,172.17.27.1/32 port=2294
+set api disabled=yes
+set winbox address=10.0.0.0/8,101.53.0.0/18,202.151.168.0/21,210.86.232.0/21,119.17.224.0/19,119.15.176.0/20,27.74.240.151/32,14.161.9.165/32 port=20881
+set api-ssl disabled=yes
+/radius
+add address=210.86.239.5 service=login
+/routing bgp connection
+add as=65535 disabled=no hold-time=30s keepalive-time=10s local.address=119.17.246.2 .role=ebgp name=Active output.network=BGP-Address remote.address=119.17.246.1/32 .as=24173 router-id=119.17.246.2 routing-table=main templates=default
+add as=65535 disabled=no hold-time=30s input.filter=BGP-IN keepalive-time=10s local.address=119.17.246.6 .role=ebgp name=Backup output.network=BGP-Address remote.address=119.17.246.5/32 .as=24173 router-id=119.17.246.6 routing-table=main templates=default
+/routing filter rule
+add chain=BGP-IN disabled=no rule="if (protocol bgp) {set distance 25; accept} "
+/snmp
+set enabled=yes trap-version=2
+/system clock
+set time-zone-name=Asia/Bangkok
+/system identity
+set name=CE1
+/system logging
+add action=syslog topics=info,bridge
+add action=syslog topics=info,interface
+add action=syslog topics=info,ppp,pppoe
+add action=syslog topics=info,route,bgp
+add action=syslog topics=info,vrrp
+add action=syslog topics=info,bgp,error
+add action=syslog topics=system,error,critical
+add action=syslog topics=system,info
+add action=syslog topics=interface,warning
+/system ntp client
+set enabled=yes
+/system ntp client servers
+add address=202.151.175.18
+add address=14.0.18.136
+/system routerboard settings
+set enter-setup-on=delete-key
+/system scheduler
+add interval=30s name=schedule_checkRadius on-event=disable_localacc policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon start-time=startup
+/system script
+add dont-require-permissions=no name=disable_localacc owner=netnam policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon source="{\r\
+    \n :local username \"netnam\";\r\
+    \n :local radius [/radius monitor 0 once as-value ];   \r\
+    \n :local valid ((\$radius->\"accepts\") + (\$radius->\"rejects\"));\r\
+    \n :local invalid ((\$radius->\"bad-replies\") + (\$radius->\"timeouts\"));\r\
+    \n :local requests (\$radius->\"requests\")\r\
+    \n :local userenabled (([/user get \$username value-name=address]=\"0.0.0.0/0\")||([/user get \$username value-name=address]=\"\"))\r\
+    \n :local lradiusup;\r\
+    \n\r\
+    \n :if (\$requests > 0) do={\r\
+    \n \r\
+    \n  :if (\$valid = 0) do={ \\\r\
+    \n   :if (\$invalid > 0) do={ :set lradiusup false; } else={ :set lradiusup true; } } else={ :set lradiusup true; }\r\
+    \n  \r\
+    \n  :if (\$userenabled != !\$lradiusup) do={ \\\r\
+    \n   :if (\$lradiusup = true) \\\r\
+    \n    do={  /user set [/user find name=\$username] address=210.86.239.233; :log info \"RADIUS working, disabling local user \$username\" } \\\r\
+    \n   else={ /user set [/user find name=\$username] address=0.0.0.0/0; :log info \"RADIUS down, enabling local user \$username\" }; \r\
+    \n  }\r\
+    \n }\r\
+    \n\r\
+    \n /radius reset-counters\r\
+    \n}"
+/tool bandwidth-server
+set enabled=no
+/user aaa
+set use-radius=yes

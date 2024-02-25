@@ -1,0 +1,38 @@
+<div aria-live="polite" style="position: relative;">
+  <!-- Position it -->
+  <div style="top: 0;" id="toast-container">
+    <!-- Existing toasts -->
+    {% for message in messages %}
+      <div class="toast alert {{ message.tags }}" role="alert {{ message.tags }}" aria-live="assertive" aria-atomic="true" data-autohide="false">
+        <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <div class="toast-body">{{ message }}</div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- JavaScript to activate Bootstrap toasts -->
+<script>
+  $(document).ready(function () {
+    // Initialize existing toasts
+    $('.toast').toast()
+  
+    // Show existing toasts
+    $('.toast').toast('show')
+  
+    // Function to append a new toast
+    function appendToast(message) {
+      var newToast = $('<div class="toast alert ' + message.tags + '" role="alert" aria-live="assertive" aria-atomic="true" data-autohide="false">' + '<button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close"><span aria-hidden="true">&times;</span></button>' + '<div class="toast-body">' + message.text + '</div>' + '</div>')
+  
+      // Append the new toast
+      $('#toast-container').append(newToast)
+  
+      // Initialize and show the new toast
+      newToast.toast()
+      newToast.toast('show')
+    }
+  
+    // Example of appending a new message
+    // To append a new message, call appendToast({tags: 'alert-danger', text: 'New error message'}) where tags is the Bootstrap alert class and text is the message text.
+  })
+</script>

@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block pagecontent %}
+  <div class="modal fade bd-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content">
+        <div class="alert alert-danger" role="alert">
+          <div id="result-message"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-12 col-lg-7">
+      <!-- Log Activity -->
+      {% if user.is_staff %}
+        <div class="card shadow mb-8">
+          <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Total Customer: {{ total_clients }}</h6>
+          </div>
+          <div class="card-body">
+            <form class="form-inline my-2 my-lg-0" method="GET" action="{% url 'deviceslist' %}">
+              <input class="form-control mr-sm-2" type="search" placeholder="Hostname or IP" aria-label="Search" name="q" />
+              <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+            </form>
+            <br />
+            <div class="row">
+              {% for client in clients %}
+                <div class="col-lg-3">
+                  <div class="card mb-3">
+                    <div class="card-body">
+                      <h5 class="card-title"><a href="{% url 'device_detail' main_hostname=client.name  %}">{{ client.name }}</a></h5>
+                      <p class="card-text">Total Devices: {{ client.total_devices }}</p>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+
+            <!-- Pagination Links -->
+            <nav aria-label="Page navigation ">
+              <ul class="pagination justify-content-center">
+                {% if clients.has_previous %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page=1">First</a>
+                  </li>
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ clients.previous_page_number }}">Previous</a>
+                  </li>
+                {% endif %}
+
+                {% for num in clients.paginator.page_range %}
+                  {% if clients.number == num %}
+                    <li class="page-item active">
+                      <span class="page-link">{{ num }}</span>
+                    </li>
+                  {% else %}
+                  {% if num > clients.number|add:"-2" and num < clients.number|add:"3" %}
+                      <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                      </li>
+                    {% endif %}
+                  {% endif %}
+                {% endfor %}
+
+                {% if clients.has_next %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ clients.next_page_number }}">Next</a>
+                  </li>
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ clients.paginator.num_pages }}">Last</a>
+                  </li>
+                  <span class="page-link">Total: {{ clients.paginator.num_pages }}</span>
+                {% endif %}
+
+                <!-- Small text for mobile responsiveness -->
+                <li class="page-item d-sm-none"></li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      {% else %}
+        You are not authorized for this site, please contact administrator
+      {% endif %}
+    </div>
+  </div>
+  {% include 'clientcare/messages.html' %}
+{% endblock %}

@@ -1,0 +1,208 @@
+
+Current configuration:
+!
+ver 08.0.61aT213
+!
+stack unit 1
+  module 1 icx7150-24p-poe-port-management-module
+  module 2 icx7150-2-copper-port-2g-module
+  module 3 icx7150-4-sfp-plus-port-40g-module
+!
+!
+!
+lag sw04 dynamic id 4
+ ports ethe 1/3/3 to 1/3/4 
+!
+!
+!
+vlan 1 name DEFAULT-VLAN by port
+!
+vlan 10 by port
+ tagged ethe 1/1/1 to 1/1/12 ethe 1/1/23 to 1/1/24 lag 4 
+!
+vlan 20 by port
+ tagged ethe 1/1/1 to 1/1/12 ethe 1/1/23 to 1/1/24 lag 4 
+ untagged ethe 1/1/22 
+!
+vlan 88 by port
+ tagged ethe 1/1/1 to 1/1/12 ethe 1/1/23 to 1/1/24 ethe 1/2/1 lag 4 
+ untagged ethe 1/2/2 
+ router-interface ve 88
+!
+vlan 110 by port
+ tagged ethe 1/1/1 to 1/1/12 lag 4 
+ untagged ethe 1/1/13 to 1/1/21 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+aaa authentication login default tacacs+ local
+aaa authentication login privilege-mode
+aaa accounting commands 0 default start-stop tacacs+
+aaa accounting exec default start-stop tacacs+
+aaa accounting system default start-stop tacacs+
+console timeout 30
+enable aaa console
+hostname SW04
+ip route 0.0.0.0/0 192.168.88.254
+!
+logging host 210.86.239.36 
+logging buffered 4000
+logging console
+no telnet server
+username netnam password .....
+tacacs-server host 210.86.239.5
+tacacs-server key 2 $Z25vZyE2fA==
+snmp-server community ..... ro
+!
+!
+clock timezone gmt GMT+07
+!
+!
+ntp
+ server 202.151.175.18
+ server 202.151.175.19
+!
+!
+no web-management http
+ssh access-group netnam
+!
+!
+!
+!
+!
+!
+!
+interface ethernet 1/1/1
+ dual-mode  88
+ inline power
+!
+interface ethernet 1/1/2
+ dual-mode  88
+ inline power
+!
+interface ethernet 1/1/3
+ dual-mode  88
+ inline power
+!
+interface ethernet 1/1/4
+ dual-mode  88
+ inline power
+!
+interface ethernet 1/1/5
+ dual-mode  88
+ inline power
+!
+interface ethernet 1/1/6
+ dual-mode  88
+ inline power
+!
+interface ethernet 1/1/7
+ dual-mode  88
+ inline power
+!
+interface ethernet 1/1/8
+ dual-mode  88
+ inline power
+!
+interface ethernet 1/1/9
+ dual-mode  88
+ inline power
+!
+interface ethernet 1/1/10
+ dual-mode  88
+ inline power
+!
+interface ethernet 1/1/11
+ dual-mode  88
+ inline power
+!
+interface ethernet 1/1/12
+ dual-mode  88
+ inline power
+!
+interface ethernet 1/1/13
+ inline power
+!
+interface ethernet 1/1/14
+ inline power
+!
+interface ethernet 1/1/15
+ inline power
+!
+interface ethernet 1/1/16
+ inline power
+!
+interface ethernet 1/1/17
+ inline power
+!
+interface ethernet 1/1/18
+ inline power
+!
+interface ethernet 1/1/19
+ inline power
+!
+interface ethernet 1/1/20
+ inline power
+!
+interface ethernet 1/1/21
+ inline power
+!
+interface ethernet 1/1/22
+ inline power
+!
+interface ethernet 1/1/23
+ dual-mode  88
+ inline power
+!
+interface ethernet 1/1/24
+ dual-mode  88
+ inline power
+!
+interface ethernet 1/3/1
+ disable
+!
+interface ethernet 1/3/2
+ disable
+!
+interface lag 4
+ speed-duplex 1000-full
+!
+interface ve 88
+ ip address 192.168.88.4 255.255.255.0
+!
+!
+!
+ip access-list standard netnam
+ sequence 10 permit 192.168.88.0 0.0.0.255 
+ sequence 20 permit host 14.161.9.165 
+ sequence 30 permit host 27.74.240.151 
+ sequence 40 permit 10.20.22.0 0.0.1.255 
+ sequence 50 permit 10.20.27.0 0.0.0.255 
+ sequence 60 permit 10.11.8.0 0.0.1.255 
+ sequence 70 permit 101.53.0.0 0.0.63.255 
+ sequence 80 permit 119.17.224.0 0.0.31.255 
+ sequence 90 permit 119.15.176.0 0.0.15.255 
+ sequence 100 permit 202.151.168.0 0.0.7.255 
+ sequence 110 permit 210.86.232.0 0.0.7.255 
+ sequence 120 permit 202.151.169.0 0.0.0.255 
+!
+!
+!
+lldp run
+!
+!
+ip ssh  timeout 30
+ip ssh  idle-time 20
+!
+!
+end

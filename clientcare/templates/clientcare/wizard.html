@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block pagecontent %}
+
+<div class="row">
+    <div class="col">
+<div class="card border-danger mb-3" style="max-width: 18rem;">
+  <div class="card-body text-danger">
+    <form id="wizard-form" method="POST">
+      <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+      <input type="hidden" name="step" id="step" value="1">
+      <!-- Step 1: Input fields for Mikrotik connection -->
+      <div class="card border-danger mb-3" style="max-width: 18rem;">
+        <div class="card-body text-danger">
+      <input type="text" class="form-control" name="mikrotik_ip"  placeholder="IP Address" required>
+      <input type="password" class="form-control" name="ssh_password" placeholder="Tacacs+ Password" required">
+      <button type="submit" class="btn btn-outline-success">Step 1</button>
+    </div>
+    </div>
+    </form>
+    <form id="wizard-form" method="POST">
+      <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+      <input type="hidden" name="step" id="step" value="2">
+      <div class="card border-danger mb-3" style="max-width: 18rem;">
+        <div class="card-body text-danger">
+            <button type="submit" class="btn btn-outline-success">Step 2</button>
+    
+        </div>
+      </div>
+    </form>
+    <form id="wizard-form" method="POST">
+      <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+      <input type="hidden" name="step" id="step" value="3">
+        <div class="card border-danger mb-3" style="max-width: 18rem;">
+            <div class="card-body text-danger">
+              
+              <input type="text" class="form-control" name="subnet" placeholder="Subnet">
+          
+              <!-- Step 4: Button to execute Step 3 -->
+              <button type="submit" class="btn btn-outline-success">Step 3</button>
+    
+            </div>
+          </div>
+    </form>
+    </div>
+      <!-- Step 2: Button to execute Step 1 -->
+
+    </form>
+  </div>
+</div>
+  <div class="col-lg-9">
+    <div class="card"">
+      <div class="card-body">
+        <h5 class="card-title">Guide</h5>
+        <h6 class="card-subtitle mb-2 text-muted">How to use</h6>
+        <p class="card-text">Step 1: Nhập IP của Mikrotik và password xác thực (Username sẽ tương ứng với user đang đăng nhập tools).</p>
+        <p class="card-text">Step 2: Restart Network nhận route.</p>
+        <p class="card-text">Step 3: Nhập subnet của vlan quản trị. Sau khi success nhấn vào link bên dưới</p>
+        <a href="/clientcare/deviceslist/" class="card-link">List Devices</a>
+      </div>
+    </div>
+  </br>
+</br>
+    <div class='progress-wrapper'>
+      <div id='progress-bar' class='progress-bar' style="background-color: #66ff07; width: 0%;">&nbsp;</div>
+    </div>
+    <div id="progress-bar-message"></div>
+  </div>
+</div>
+{% include 'clientcare/messages.html' %}
+
+{% if task_id %}
+<script>
+// vanilla JS version
+document.addEventListener("DOMContentLoaded", function () {
+  var progressUrl = "{% url 'celery_progress:task_status' task_id %}";
+  CeleryProgressBar.initProgressBar(progressUrl);
+});
+</script>
+{% endif %}
+{% endblock %}

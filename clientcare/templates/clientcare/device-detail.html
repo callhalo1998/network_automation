@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% block pagecontent %}
+{% load static %}
+
+  <!-- Page Heading -->
+  <div class="modal fade"
+       id="messageModal"
+       tabindex="-1"
+       role="dialog"
+       aria-labelledby="messageModalTitle"
+       aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="messageModalTitle">SNMP Scan Result</h5>
+          
+          <button type="button"
+                  class="close"
+                  data-dismiss="modal"
+                  aria-label="Close"
+                  onclick="redirectToDetail('{{ main_hostname }}')">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body" id="messageContainer"></div>
+        <div class="modal-footer">
+          <button type="button"
+                  class="btn btn-secondary"
+                  data-dismiss="modal"
+                  onclick="location.reload()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% include 'clientcare/messages.html' %}
+  <div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">List Devices</h1>
+  </div>
+  <div class="row">
+    <div class="col-xl-12 col-lg-7">
+      <!-- Log Activity -->
+      <div class="card shadow mb-8">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">Total List Devices {{ hostnames|length }}</h6>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <div class="input-group md-form form-sm form-2 pl-0">  
+              <form class="form-inline my-2 my-lg-0" method="GET" action="{% url 'device_detail' main_hostname=main_hostname %}">
+                <input class="form-control mr-sm-2" type="search" placeholder="Hostname or IP" aria-label="Search" name="q">
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+              </form>
+              <br></br>
+            </div> 
+            <table class="table table-striped"
+                   width="100%"
+                   cellspacing="0">
+              <thead>
+                <tr>
+                  <th>Full Hostname</th>
+                  <th>IP Address</th>
+                  <th>Device Type</th>
+                  <th>Uptime</th>
+                  <th>Manage</th>
+                  <th>Status</th> 
+                </tr>
+              </thead>
+              <!--<tfoot>
+              <tr>
+                  <th>IP Address</th>
+                  <th>Hostname</th>
+                  <th>Type</th>
+                  <th>Series</th>
+                  <th>Created At</th>
+                  <th>Manage</th>
+              </tr>
+            </tfoot> -->
+              <tbody>
+                {% for hostname in hostnames %}
+                {% for device in devices %}
+                  {% if device.hostname == hostname %}
+
+                  <tr>
+                    <td>{{ hostname }}</td>
+                    <td>
+                      <li>{{ device.ip_address }}</li>
+                    </td>
+                    <td>
+                     <li>{{ device.device_type }} / {{ device.vendor }}</li>
+                    </td>
+                    <td>
+                     <li>{{ device.uptime }}</li>
+                    </td>
+                    <td>
+                    {% if user.is_superuser %}
+                    <a href="/admin/clientcare/device/{{ device.id }}/change" class="d-none d-sm-inline-block btn btn-sm btn-warning custom-sidebar shadow-sm"><i class="fas fa-edit"></i></a>
+                    <a href="/admin/clientcare/device/{{ device.id }}/delete" class="d-none d-sm-inline-block btn btn-sm btn-warning custom-sidebar shadow-sm"><i class="fas fa-trash"></i></a>
+                    {% endif %}
+                    <a class="d-none d-sm-inline-block btn btn-sm btn-warning custom-sidebar shadow-sm" href="#" data-toggle="collapse" data-target="#collapseManagebackup{{ forloop.counter }}" aria-expanded="true" aria-controls="collapseUtilities"><i class="fas fa-download"></i>
+                    <span></span>
+                    </a>
+                    <button type="button" class="d-none d-sm-inline-block btn btn-sm btn-warning custom-sidebar shadow-sm" onclick="performSNMPScan('{{ hostname }}')"><i class="fas fa-play-circle "></i></a></button>
+                    <a class="d-none d-sm-inline-block btn btn-sm btn-warning custom-sidebar shadow-sm" href="#" data-toggle="collapse" data-target="#collapseManageconfig{{ forloop.counter }}" aria-expanded="true" aria-controls="collapseUtilities"><i class="fas fa-terminal"></i></a>
+
+
+                    <div id="collapseManageconfig{{ forloop.counter }}" class="collapse" aria-labelledby="headingUtilities" data-parent="#accordionSidebar">
+                      <form method="POST" action="{% url 'backupconf' hostname=hostname %}">
+                        {% csrf_token %}
+                        <div class="form-row">
+                          <div class="col-12">
+                            <div class="deviceconf">
+                            </br>
+                              <label for="id_configure_backup">
+                                <input id="backupconf" name="deviceconf" type="radio" value="backupconf" required /> Backup Config
+                              </label>
+                            </div>
+                            <div class="rbconf">
+                              <label for="id_configure_reset">
+                                <input id="resetconf" name="deviceconf" type="radio" value="resetconf" required /> Reset Config
+                              </label>
+                            </div>
+                            <button type="submit" class="mt-3 btn btn-primary">Submit</button>
+                          </div>
+                        </div>
+                      </form>
+                    </div>
+
+                <div id="collapseManagebackup{{ forloop.counter }}"
+                    class="collapse"
+                    aria-labelledby="headingUtilities"
+                    data-parent="#accordionSidebar">
+                <div class=" py-2 collapse-inner rounded">
+                    <h6 class="collapse-header">Download</h6>
+                    {% for backup_file in device.backup_files %}
+                       <li><a class="collapse-item"
+                            href="{% url 'download_file' file_path=backup_file.file_path %}">{{ backup_file.get_file_name }}</a></li>
+                    {% endfor %}
+                </div>
+                </div>             							                               
+                    </td>
+                    <td>
+                      {% if device.status == 'Online' %}
+                      <button type="button" class="fas fa-check-circle btn btn-success"> Online</button>
+                    {% else %}
+                      <button type="button" class="fas fa-times-circle btn btn-danger"> Timeout</button>
+                   {% endif %}
+                    </td>
+                  </tr>
+                  {% endif %}
+                {% endfor %}
+                  
+                {% endfor %}
+
+              </tbody>
+
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
